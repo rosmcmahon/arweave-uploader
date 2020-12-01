@@ -1,32 +1,17 @@
 import { upload } from '../src/uploader'
 import { assert, expect } from 'chai'
-import nock from 'nock'
+import sinon from 'sinon'
 import jwk from '../src/secret/jwk.json'
 import { JWKInterface } from 'arweave/node/lib/wallet'
 import Arweave from 'arweave'
 import { logger, setDebugMessagesOn } from '../src/utils/logger'
+import * as Utils from '../src/utils/utils'
+import { concatBuffers } from 'arweave/node/lib/utils'
+import Transactions from 'arweave/node/transactions'
 
 
 const arweave = Arweave.init({ host: 'arweave.net', protocol: 'https' })
 
-// public getStatus(id: string): Promise<TransactionStatusResponse> {
-// 	return this.api.get(`tx/${id}/status`).then(response => {
-// 		if (response.status == 200) {
-// 			return {
-// 				status: 200,
-// 				confirmed: response.data
-// 			};
-// 		}
-// 		return {
-// 			status: response.status,
-// 			confirmed: null
-// 		};
-// 	});
-// }
-
-// const scope = nock('https://arweave.net')
-// 	.get(/tx\/.*\/status/)
-// 	.reply(200, { status: 200, confirmed: 'dummy' })
 
 describe('arweave-uploader tests', () => {
 
@@ -39,8 +24,17 @@ describe('arweave-uploader tests', () => {
 		// create some ransom empty wallets
 		badJwk1 = await arweave.wallets.generate()
 		badJwk2 = await arweave.wallets.generate()
+		logger('test wallet balance', arweave.ar.winstonToAr(
+			await arweave.wallets.getBalance(
+				await arweave.wallets.jwkToAddress(goodJwk)
+			)
+		))
 
 		setDebugMessagesOn(true)
+	})
+
+	afterEach(() => {
+		sinon.restore()
 	})
 
 	it('throws an error if a data tx owner has no balance', async () => {
@@ -84,8 +78,30 @@ describe('arweave-uploader tests', () => {
 		const tx = await arweave.createTransaction({ 
 			data: '123',
 		}, goodJwk)
-		const txid = await upload(tx, goodJwk)
 
+		// let's fake the getStatus calls in upload function
+		const fakeGetStatus = sinon.stub(Utils, 'getStatus')
+			.onCall(0).resolves(404)
+			.onCall(1).resolves(202)
+			.onCall(2).resolves(202)
+			.onCall(3).resolves(404)
+			.onCall(4).resolves(404)
+			.onCall(5).resolves(404)
+			.onCall(6).resolves(400)
+			.onCall(7).resolves(202)
+			.onCall(8).resolves(202)
+			.onCall(9).resolves(200)
+
+		//let's save money 🤑
+		const preventTxPost = sinon.stub(Transactions.prototype, 'post').resolves()
+
+		//let's save time
+		sinon.stub(Utils, 'sleep').resolves()
+
+		const txid = await upload(tx, goodJwk)
+		
+		expect(fakeGetStatus.called).to.equal(true)
+		expect(preventTxPost.called).to.equal(true)
 		expect(txid).to.have.lengthOf(43)
 	}).timeout(0)
 	
