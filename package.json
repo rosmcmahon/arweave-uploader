@@ -1,6 +1,6 @@
 {
   "name": "arweave-uploader",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -12,6 +12,10 @@
   "keywords": [],
   "author": "Ros McMahon <rosmcmahon@gmail.com>",
   "license": "LGPL-3.0-or-later",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mcmonkeys1/arweave-uploader.git"
+  },
   "devDependencies": {
     "@types/chai": "^4.2.14",
     "@types/mocha": "^8.0.4",
