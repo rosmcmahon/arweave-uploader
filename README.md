@@ -17,7 +17,7 @@ const arweave = ...
 
 const main = async () => {
 
-	/* create you transaction as normal */
+	/* create your transaction as normal */
 
 	const tx = await arweave.createTransaction({ data: "123" }, wallet)
 	tx.addTag('App-Name', 'my-app-name')
@@ -27,14 +27,14 @@ const main = async () => {
 
 		/* no need to sign or post, just call "uploadTx" with your wallet */
 
-		const txid = await uploadTx(tx, wallet) // this will taka long time!
+		const txid = await uploadTx(tx, wallet) // this will take a long time!
 		
 		console.log('tx upload success with id ' + txid)
 
 	}catch(e){
 		
 		/* bad tx found (e.g. wallet does not enough AR for tx fee) */
-		
+
 		console.error(e.name + ': ' + e.message)
 	}
 }
