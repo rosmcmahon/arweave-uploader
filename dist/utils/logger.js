@@ -25,7 +25,7 @@ var logger = function () {
             console.log.apply(console, __spreadArrays([ansi_colors_1.default.blue('[arweave-uploader:]')], args));
         }
         else {
-            console.log.apply(console, __spreadArrays(['[arweave-uploader:]'], args));
+            console.log.apply(console, __spreadArrays(['%c[arweave-uploader:]', 'color: #0000ff'], args));
         }
     }
 };

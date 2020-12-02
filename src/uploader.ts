@@ -14,17 +14,24 @@ export const upload = async (tx: Transaction, wallet: JWKInterface): Promise<str
 	//sign & post
 	await arweave.transactions.sign(tx, wallet);
 	await arweave.transactions.post(tx)
-	logger('initial txid', tx.id)
+	logger('New txid', tx.id)
 	const tStart = new Date().valueOf()
 
-	//start examining the status
+	// start examining the status
 	let status = await getStatus(tx.id)
 
-	//404s may change to 202s here
-	if(status === 404){
-		logger('Initial 404 detected. Waiting...', status)
-		await sleep(30000) //30 secs
-		status = await getStatus(tx.id)
+	// 404s may change to 202s here, we'll wait 30 seconds total
+	let wait = 6
+	while(status === 404 && wait--){
+		logger('Initial 404 detected. Waiting 5 seconds...', status)
+		await sleep(5000) //5 secs
+		try{
+			status = await getStatus(tx.id)
+		}catch(err){
+			logger('Network error getting status. Ignoring & waiting...', status)
+			wait++
+			status = 404
+		}
 	}
 	if(status === 400 || status === 404 || status === 410){
 		logger('Invalid transaction detected. Status ' + status, 'Throwing error')

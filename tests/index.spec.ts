@@ -74,7 +74,7 @@ describe('arweave-uploader tests', () => {
 
 	}).timeout(20000)
 
-	it('detects an upload failure & returns a confirmed txid for a valid transaction', async () => {
+	it('detects an upload failure after mining & returns a confirmed txid for a valid transaction', async () => {
 		const tx = await arweave.createTransaction({ 
 			data: '123',
 		}, goodJwk)
@@ -88,6 +88,37 @@ describe('arweave-uploader tests', () => {
 			.onCall(4).resolves(404)
 			.onCall(5).resolves(404)
 			.onCall(6).resolves(400)
+			.onCall(7).resolves(202)
+			.onCall(8).resolves(202)
+			.onCall(9).resolves(200)
+
+		//let's save money 🤑
+		const preventTxPost = sinon.stub(Transactions.prototype, 'post').resolves()
+
+		//let's save time
+		sinon.stub(Utils, 'sleep').resolves()
+
+		const txid = await upload(tx, goodJwk)
+		
+		expect(fakeGetStatus.called).to.equal(true)
+		expect(preventTxPost.called).to.equal(true)
+		expect(txid).to.have.lengthOf(43)
+	}).timeout(0)
+
+	it('detects an upload failure before mining & returns a confirmed txid after failure recovery', async () => {
+		const tx = await arweave.createTransaction({ 
+			data: '123',
+		}, goodJwk)
+
+		// let's fake the getStatus calls in upload function
+		const fakeGetStatus = sinon.stub(Utils, 'getStatus')
+			.onCall(0).resolves(404)
+			.onCall(1).resolves(404)
+			.onCall(2).resolves(404)
+			.onCall(3).resolves(404)
+			.onCall(4).resolves(404)
+			.onCall(5).resolves(404)
+			.onCall(6).resolves(202)
 			.onCall(7).resolves(202)
 			.onCall(8).resolves(202)
 			.onCall(9).resolves(200)

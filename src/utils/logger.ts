@@ -8,7 +8,7 @@ export const logger = (...args: any[]) => {
 		if (typeof window === 'undefined') {
 			console.log(col.blue('[arweave-uploader:]'), ...args)
 		}else{
-			console.log('[arweave-uploader:]', ...args)
+			console.log('%c[arweave-uploader:]', 'color: #0000ff', ...args)
 		}
 	}
 }
