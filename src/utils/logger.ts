@@ -5,6 +5,10 @@ export const setDebugMessagesOn = (b: boolean) => DEBUG_MESSAGES = b
 
 export const logger = (...args: any[]) => {
 	if(DEBUG_MESSAGES){
-		console.log(col.blue('[arweave-uploader:]'), ...args)
+		if (typeof window === 'undefined') {
+			console.log(col.blue('[arweave-uploader:]'), ...args)
+		}else{
+			console.log('[arweave-uploader:]', ...args)
+		}
 	}
 }
