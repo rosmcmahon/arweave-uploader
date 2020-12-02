@@ -21,7 +21,12 @@ var logger = function () {
         args[_i] = arguments[_i];
     }
     if (DEBUG_MESSAGES) {
-        console.log.apply(console, __spreadArrays([ansi_colors_1.default.blue('[arweave-uploader:]')], args));
+        if (typeof window === 'undefined') {
+            console.log.apply(console, __spreadArrays([ansi_colors_1.default.blue('[arweave-uploader:]')], args));
+        }
+        else {
+            console.log.apply(console, __spreadArrays(['[arweave-uploader:]'], args));
+        }
     }
 };
 exports.logger = logger;
