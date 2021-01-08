@@ -78,6 +78,6 @@ export const upload = async (tx: Transaction, wallet: JWKInterface): Promise<str
 	}
 
 	logger('Failure', status, '. Retrying post tx')
-	tx.addTag('Upload-Attempt', new Date().toLocaleString() ) // this gives different txid too
+	tx.addTag('Retry', (new Date().valueOf()/1000).toString() ) // this gives different txid too
 	return await upload(tx, wallet)
 }

@@ -6,7 +6,6 @@ import { JWKInterface } from 'arweave/node/lib/wallet'
 import Arweave from 'arweave'
 import { logger, setDebugMessagesOn } from '../src/utils/logger'
 import * as Utils from '../src/utils/utils'
-import { concatBuffers } from 'arweave/node/lib/utils'
 import Transactions from 'arweave/node/transactions'
 
 
