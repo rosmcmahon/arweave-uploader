@@ -147,7 +147,7 @@ var upload = function (tx, wallet) { return __awaiter(void 0, void 0, void 0, fu
                 _a.label = 25;
             case 25:
                 logger_1.logger('Failure', status, '. Retrying post tx');
-                tx.addTag('Upload-Attempt', new Date().toLocaleString());
+                tx.addTag('Retry', (new Date().valueOf() / 1000).toString());
                 return [4, exports.upload(tx, wallet)];
             case 26: return [2, _a.sent()];
         }
