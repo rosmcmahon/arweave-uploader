@@ -7,9 +7,8 @@ Arweave Uploader - detect and handle arweave upload failures
 ## Installation
 
 ```
-npm install mcmonkeys1/arweave-uploader
+npm install arweave-uploader
 ```
-N.B. This installs directly from github. You may have issues uninstalling/updating the package, in this case remove node_modules & package-lock.json and try again
 
 ## Example Usage
 
