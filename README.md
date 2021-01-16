@@ -2,6 +2,8 @@
 
 Arweave Uploader - detect and handle arweave upload failures 
 
+** N.B. this only works for value transfer or very small data txs
+
 ## Installation
 
 ```
