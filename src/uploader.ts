@@ -5,14 +5,23 @@ import { logger } from './utils/logger'
 import { getStatus, sleep } from './utils/utils'
 
 const arweave = Arweave.init({
-	host: 'arweave.net',
-	protocol: 'https',
+	host: 'lon-1.arweave.net',
+	protocol: 'http',
+	port: 1984
 })
 
 
 export const upload = async (tx: Transaction, wallet: JWKInterface): Promise<string> => {
-	//sign & post
-	await arweave.transactions.sign(tx, wallet);
+
+	//TODO: do some check to make sure we have a valid tx. do not rely on status codes for this!
+	//e.g. check owner has enough balance for fee & quantity
+	// const balance = await arweave.wallets.getBalance(await arweave.wallets.jwkToAddress(wallet))
+	//etc...
+
+	//sign 
+	await arweave.transactions.sign(tx, wallet)
+
+	//post
 	await arweave.transactions.post(tx)
 	logger('New txid', tx.id)
 	const tStart = new Date().valueOf()
@@ -22,8 +31,8 @@ export const upload = async (tx: Transaction, wallet: JWKInterface): Promise<str
 
 	// 404s may change to 202s here, we'll wait 30 seconds total
 	let wait = 6
-	while(status === 404 && wait--){
-		logger('Initial 404 detected. Waiting 5 seconds...', status)
+	while((status === 404 || status === 410) && wait--){
+		logger('Initial 4XX detected. Waiting 5 seconds...', status)
 		await sleep(5000) //5 secs
 		try{
 			status = await getStatus(tx.id)
@@ -35,7 +44,7 @@ export const upload = async (tx: Transaction, wallet: JWKInterface): Promise<str
 	}
 	if(status === 400 || status === 404 || status === 410){
 		logger('Invalid transaction detected. Status ' + status, 'Throwing error')
-		throw new Error('Invalid transaction detected. Status ' + status)
+		throw new Error('Possible invalid transaction detected. Status ' + status)
 	}
 
 	while(status === 202){
@@ -58,7 +67,7 @@ export const upload = async (tx: Transaction, wallet: JWKInterface): Promise<str
 	}
 
 	// we'll give it 2 minutes for propogation
-	if(status === 404){
+	if(status === 404 || status === 410){ //idk what 410 means but it happens sometimes
 		let tries = 3
 		do{
 			await sleep(40000) //40 secs
@@ -77,7 +86,8 @@ export const upload = async (tx: Transaction, wallet: JWKInterface): Promise<str
 		}while(--tries)
 	}
 
-	logger('Failure', status, '. Retrying post tx')
-	tx.addTag('Retry', (new Date().valueOf()/1000).toString() ) // this gives different txid too
-	return await upload(tx, wallet)
+	logger('Possible failure, no retry. Status ', status)//, '. Retrying post tx')
+	// tx.addTag('Retry', (new Date().valueOf()/1000).toString() ) // this gives different txid too
+	// return await upload(tx, wallet)
+	throw new Error('Possible failure. Status ' + status)
 }

@@ -36,42 +36,42 @@ describe('arweave-uploader tests', () => {
 		sinon.restore()
 	})
 
-	it('throws an error if a data tx owner has no balance', async () => {
-		let result = { name: '', message: '' }
+	// it('throws an error if a data tx owner has no balance', async () => {
+	// 	let result = { name: '', message: '' }
 
-		const tx = await arweave.createTransaction({ 
-			data: '123',
-		}, badJwk1)
+	// 	const tx = await arweave.createTransaction({ 
+	// 		data: '123',
+	// 	}, badJwk1)
 
-		try {
-			const txid = await upload(tx, badJwk1)
-		}catch(error){
-			result = error
-		}
+	// 	try {
+	// 		const txid = await upload(tx, badJwk1)
+	// 	}catch(error){
+	// 		result = error
+	// 	}
 
-		expect(result.name).to.eq('Error')
-		expect(result.message).to.eq('Invalid transaction detected. Status 410')
+	// 	expect(result.name).to.eq('Error')
+	// 	expect(result.message).to.eq('Invalid transaction detected. Status 410')
 
-	}).timeout(20000)
+	// }).timeout(40000)
 	
-	it('throws an error if a value transfer tx owner has no balance', async () => {
-		let result = { name: '', message: '' }
+	// it('throws an error if a value transfer tx owner has no balance', async () => {
+	// 	let result = { name: '', message: '' }
 
-		const tx = await arweave.createTransaction({ 
-			quantity: arweave.ar.arToWinston('100'),
-			target: await arweave.wallets.jwkToAddress(badJwk2)
-		}, badJwk1)
+	// 	const tx = await arweave.createTransaction({ 
+	// 		quantity: arweave.ar.arToWinston('100'),
+	// 		target: await arweave.wallets.jwkToAddress(badJwk2)
+	// 	}, badJwk1)
 
-		try {
-			const txid = await upload(tx, badJwk1)
-		}catch(error){
-			result = error
-		}
+	// 	try {
+	// 		const txid = await upload(tx, badJwk1)
+	// 	}catch(error){
+	// 		result = error
+	// 	}
 
-		expect(result.name).to.eq('Error')
-		expect(result.message).to.eq('Invalid transaction detected. Status 410')
+	// 	expect(result.name).to.eq('Error')
+	// 	expect(result.message).to.eq('Invalid transaction detected. Status 410')
 
-	}).timeout(20000)
+	// }).timeout(40000)
 
 	it('detects an upload failure after mining & returns a confirmed txid for a valid transaction', async () => {
 		const tx = await arweave.createTransaction({ 

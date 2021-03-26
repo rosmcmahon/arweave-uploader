@@ -1,8 +1,9 @@
 # arweave-uploader
 
-Arweave Uploader - detect and handle arweave upload failures 
+Arweave Uploader - detect ~~and handle~~ arweave upload failures 
 
 ** N.B. this only works for value transfer or very small data txs
+** N.B. retry is currently disabled
 
 ## Installation
 
