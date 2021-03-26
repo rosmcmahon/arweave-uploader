@@ -71,9 +71,9 @@ export const upload = async (tx: Transaction, wallet: JWKInterface, userReferenc
 		return tx.id
 	}
 
-	// we'll give it 2 minutes for propogation
+	// we'll give it 4 minutes for propogation
 	if(status === 404 || status === 410){ //idk what 410 means but it happens sometimes
-		let tries = 3
+		let tries = 6
 		do{
 			await sleep(40000) //40 secs
 			try{
@@ -91,8 +91,10 @@ export const upload = async (tx: Transaction, wallet: JWKInterface, userReferenc
 		}while(--tries)
 	}
 
+	// if(status === 404){
+	// 	tx.addTag('Retry', (new Date().valueOf()/1000).toString() ) // this gives different txid too
+	// 	return await upload(tx, wallet)
+	// }
 	logger(uRef, 'Possible failure, no retry. Status ', status)//, '. Retrying post tx')
-	// tx.addTag('Retry', (new Date().valueOf()/1000).toString() ) // this gives different txid too
-	// return await upload(tx, wallet)
-	throw new Error('Possible failure. Status ' + status)
+	throw new Error(`Possible failure. Txid: ${tx.id} Status: ${status}`)
 }
