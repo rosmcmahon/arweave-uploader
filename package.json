@@ -8,6 +8,7 @@
     "start": "ts-node test/example.ts",
     "build": "tsc -p tsconfig.build.json",
     "test": "mocha -r ts-node/register tests/**/*.spec.ts",
+    "preversion": "npm run build && git commit -m \"auto: dist\" -- ./dist",
     "postversion": "git push && git push --tags"
   },
   "keywords": [],
