@@ -48,7 +48,7 @@ export const upload = async (tx: Transaction, wallet: JWKInterface, userReferenc
 		}
 	}
 	if(status === 400 || status === 404 || status === 410){
-		logger(uRef, 'Invalid transaction detected. Status ' + status, 'Throwing error')
+		logger(uRef, 'Possible invalid transaction detected. Status ' + status, 'Throwing error')
 		throw new Error('Possible invalid transaction detected. Status ' + status)
 	}
 
