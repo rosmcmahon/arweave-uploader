@@ -44,9 +44,8 @@ var arweave_1 = __importDefault(require("arweave"));
 var logger_1 = require("./utils/logger");
 var utils_1 = require("./utils/utils");
 var arweave = arweave_1.default.init({
-    host: 'lon-1.arweave.net',
-    protocol: 'http',
-    port: 1984
+    host: 'arweave.net',
+    protocol: 'https',
 });
 var upload = function (tx, wallet, userReference) { return __awaiter(void 0, void 0, void 0, function () {
     var uRef, tStart, status, wait, err_1, now, err_2, tries, err_3;
@@ -68,7 +67,7 @@ var upload = function (tx, wallet, userReference) { return __awaiter(void 0, voi
                 return [4, utils_1.getStatus(tx.id)];
             case 3:
                 status = _a.sent();
-                wait = 6;
+                wait = 24;
                 _a.label = 4;
             case 4:
                 if (!((status === 404 || status === 410) && wait--)) return [3, 10];
@@ -123,7 +122,7 @@ var upload = function (tx, wallet, userReference) { return __awaiter(void 0, voi
                     return [2, tx.id];
                 }
                 if (!(status === 404 || status === 410)) return [3, 25];
-                tries = 6;
+                tries = 12;
                 _a.label = 18;
             case 18: return [4, utils_1.sleep(40000)];
             case 19:
@@ -152,8 +151,10 @@ var upload = function (tx, wallet, userReference) { return __awaiter(void 0, voi
                 if (--tries) return [3, 18];
                 _a.label = 25;
             case 25:
-                logger_1.logger(uRef, 'Possible failure, no retry. Status ', status);
-                throw new Error("Possible failure. Txid: " + tx.id + " Status: " + status);
+                logger_1.logger(uRef, 'Possible failure. Status ', status, '. Retrying post tx');
+                tx.addTag('Retry', (new Date().valueOf() / 1000).toString());
+                return [4, exports.upload(tx, wallet)];
+            case 26: return [2, _a.sent()];
         }
     });
 }); };
