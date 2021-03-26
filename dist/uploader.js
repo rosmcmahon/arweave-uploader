@@ -44,8 +44,9 @@ var arweave_1 = __importDefault(require("arweave"));
 var logger_1 = require("./utils/logger");
 var utils_1 = require("./utils/utils");
 var arweave = arweave_1.default.init({
-    host: 'arweave.net',
-    protocol: 'https',
+    host: 'lon-1.arweave.net',
+    protocol: 'http',
+    port: 1984
 });
 var upload = function (tx, wallet) { return __awaiter(void 0, void 0, void 0, function () {
     var tStart, status, wait, err_1, now, err_2, tries, err_3;
@@ -65,8 +66,8 @@ var upload = function (tx, wallet) { return __awaiter(void 0, void 0, void 0, fu
                 wait = 6;
                 _a.label = 4;
             case 4:
-                if (!(status === 404 && wait--)) return [3, 10];
-                logger_1.logger('Initial 404 detected. Waiting 5 seconds...', status);
+                if (!((status === 404 || status === 410) && wait--)) return [3, 10];
+                logger_1.logger('Initial 4XX detected. Waiting 5 seconds...', status);
                 return [4, utils_1.sleep(5000)];
             case 5:
                 _a.sent();
@@ -87,7 +88,7 @@ var upload = function (tx, wallet) { return __awaiter(void 0, void 0, void 0, fu
             case 10:
                 if (status === 400 || status === 404 || status === 410) {
                     logger_1.logger('Invalid transaction detected. Status ' + status, 'Throwing error');
-                    throw new Error('Invalid transaction detected. Status ' + status);
+                    throw new Error('Possible invalid transaction detected. Status ' + status);
                 }
                 _a.label = 11;
             case 11:
@@ -116,7 +117,7 @@ var upload = function (tx, wallet) { return __awaiter(void 0, void 0, void 0, fu
                     logger_1.logger("Success", status);
                     return [2, tx.id];
                 }
-                if (!(status === 404)) return [3, 25];
+                if (!(status === 404 || status === 410)) return [3, 25];
                 tries = 3;
                 _a.label = 18;
             case 18: return [4, utils_1.sleep(40000)];
@@ -146,10 +147,8 @@ var upload = function (tx, wallet) { return __awaiter(void 0, void 0, void 0, fu
                 if (--tries) return [3, 18];
                 _a.label = 25;
             case 25:
-                logger_1.logger('Failure', status, '. Retrying post tx');
-                tx.addTag('Retry', (new Date().valueOf() / 1000).toString());
-                return [4, exports.upload(tx, wallet)];
-            case 26: return [2, _a.sent()];
+                logger_1.logger('Possible failure, no retry. Status ', status);
+                throw new Error('Possible failure. Status ' + status);
         }
     });
 }); };
