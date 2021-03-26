@@ -97,7 +97,7 @@ describe('arweave-uploader tests', () => {
 		//let's save time
 		sinon.stub(Utils, 'sleep').resolves()
 
-		const txid = await upload(tx, goodJwk)
+		const txid = await upload(tx, goodJwk, 'failure-retry')
 		
 		expect(fakeGetStatus.called).to.equal(true)
 		expect(preventTxPost.called).to.equal(true)
@@ -117,10 +117,11 @@ describe('arweave-uploader tests', () => {
 			.onCall(3).resolves(404)
 			.onCall(4).resolves(404)
 			.onCall(5).resolves(404)
-			.onCall(6).resolves(202)
+			.onCall(6).resolves(404)
 			.onCall(7).resolves(202)
 			.onCall(8).resolves(202)
-			.onCall(9).resolves(200)
+			.onCall(9).resolves(202)
+			.onCall(10).resolves(200)
 
 		//let's save money 🤑
 		const preventTxPost = sinon.stub(Transactions.prototype, 'post').resolves()
@@ -128,7 +129,7 @@ describe('arweave-uploader tests', () => {
 		//let's save time
 		sinon.stub(Utils, 'sleep').resolves()
 
-		const txid = await upload(tx, goodJwk)
+		const txid = await upload(tx, goodJwk, 'fail before retry')
 		
 		expect(fakeGetStatus.called).to.equal(true)
 		expect(preventTxPost.called).to.equal(true)

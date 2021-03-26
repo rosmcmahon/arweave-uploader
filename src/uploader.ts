@@ -11,7 +11,12 @@ const arweave = Arweave.init({
 })
 
 
-export const upload = async (tx: Transaction, wallet: JWKInterface): Promise<string> => {
+export const upload = async (tx: Transaction, wallet: JWKInterface, userReference?: string): Promise<string> => {
+
+	let uRef = ''
+	if(userReference){
+		uRef = '[' + userReference + ']'
+	}
 
 	//TODO: do some check to make sure we have a valid tx. do not rely on status codes for this!
 	//e.g. check owner has enough balance for fee & quantity
@@ -23,7 +28,7 @@ export const upload = async (tx: Transaction, wallet: JWKInterface): Promise<str
 
 	//post
 	await arweave.transactions.post(tx)
-	logger('New txid', tx.id)
+	logger(uRef, 'New txid', tx.id)
 	const tStart = new Date().valueOf()
 
 	// start examining the status
@@ -32,37 +37,37 @@ export const upload = async (tx: Transaction, wallet: JWKInterface): Promise<str
 	// 404s may change to 202s here, we'll wait 30 seconds total
 	let wait = 6
 	while((status === 404 || status === 410) && wait--){
-		logger('Initial 4XX detected. Waiting 5 seconds...', status)
+		logger(uRef, 'Initial 4XX detected. Waiting 5 seconds...', status)
 		await sleep(5000) //5 secs
 		try{
 			status = await getStatus(tx.id)
 		}catch(err){
-			logger('Network error getting status. Ignoring & waiting...', status)
+			logger(uRef, 'Network error getting status. Ignoring & waiting...', status)
 			wait++
 			status = 404
 		}
 	}
 	if(status === 400 || status === 404 || status === 410){
-		logger('Invalid transaction detected. Status ' + status, 'Throwing error')
+		logger(uRef, 'Invalid transaction detected. Status ' + status, 'Throwing error')
 		throw new Error('Possible invalid transaction detected. Status ' + status)
 	}
 
 	while(status === 202){
 		let now = (new Date().valueOf() - tStart) / (1000*60)
-		logger("Mining for " + now.toFixed(1) + " mins. " + status)
+		logger(uRef, "Mining for " + now.toFixed(1) + " mins. " + status)
 		await sleep(30000) //sleep 30 secs
 		try{
 			status = await getStatus(tx.id)
 		}catch(err){
-			logger('Network error retrieving status.', status, 'Continuing...')
+			logger(uRef, 'Network error retrieving status.', status, 'Continuing...')
 			status = 202
 		}
 	}
 
-	logger('Finished mining period with status', status)
+	logger(uRef, 'Finished mining period with status', status)
 
 	if(status === 200){
-		logger("Success", status)
+		logger(uRef, "Success", status)
 		return tx.id
 	}
 
@@ -73,20 +78,20 @@ export const upload = async (tx: Transaction, wallet: JWKInterface): Promise<str
 			await sleep(40000) //40 secs
 			try{
 				status = await getStatus(tx.id)
-				logger('tries', tries, 'status', status)
+				logger(uRef, 'tries', tries, 'status', status)
 			}catch(err){
-				logger('Network error getting status. Ignoring & waiting...', status)
+				logger(uRef, 'Network error getting status. Ignoring & waiting...', status)
 				tries++
 				status = 404
 			}
 			if(status === 200){
-				logger("Success", status)
+				logger(uRef, "Success", status)
 				return tx.id
 			}
 		}while(--tries)
 	}
 
-	logger('Possible failure, no retry. Status ', status)//, '. Retrying post tx')
+	logger(uRef, 'Possible failure, no retry. Status ', status)//, '. Retrying post tx')
 	// tx.addTag('Retry', (new Date().valueOf()/1000).toString() ) // this gives different txid too
 	// return await upload(tx, wallet)
 	throw new Error('Possible failure. Status ' + status)
