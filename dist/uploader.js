@@ -48,17 +48,22 @@ var arweave = arweave_1.default.init({
     protocol: 'http',
     port: 1984
 });
-var upload = function (tx, wallet) { return __awaiter(void 0, void 0, void 0, function () {
-    var tStart, status, wait, err_1, now, err_2, tries, err_3;
+var upload = function (tx, wallet, userReference) { return __awaiter(void 0, void 0, void 0, function () {
+    var uRef, tStart, status, wait, err_1, now, err_2, tries, err_3;
     return __generator(this, function (_a) {
         switch (_a.label) {
-            case 0: return [4, arweave.transactions.sign(tx, wallet)];
+            case 0:
+                uRef = '';
+                if (userReference) {
+                    uRef = '[' + userReference + ']';
+                }
+                return [4, arweave.transactions.sign(tx, wallet)];
             case 1:
                 _a.sent();
                 return [4, arweave.transactions.post(tx)];
             case 2:
                 _a.sent();
-                logger_1.logger('New txid', tx.id);
+                logger_1.logger(uRef, 'New txid', tx.id);
                 tStart = new Date().valueOf();
                 return [4, utils_1.getStatus(tx.id)];
             case 3:
@@ -67,7 +72,7 @@ var upload = function (tx, wallet) { return __awaiter(void 0, void 0, void 0, fu
                 _a.label = 4;
             case 4:
                 if (!((status === 404 || status === 410) && wait--)) return [3, 10];
-                logger_1.logger('Initial 4XX detected. Waiting 5 seconds...', status);
+                logger_1.logger(uRef, 'Initial 4XX detected. Waiting 5 seconds...', status);
                 return [4, utils_1.sleep(5000)];
             case 5:
                 _a.sent();
@@ -80,21 +85,21 @@ var upload = function (tx, wallet) { return __awaiter(void 0, void 0, void 0, fu
                 return [3, 9];
             case 8:
                 err_1 = _a.sent();
-                logger_1.logger('Network error getting status. Ignoring & waiting...', status);
+                logger_1.logger(uRef, 'Network error getting status. Ignoring & waiting...', status);
                 wait++;
                 status = 404;
                 return [3, 9];
             case 9: return [3, 4];
             case 10:
                 if (status === 400 || status === 404 || status === 410) {
-                    logger_1.logger('Invalid transaction detected. Status ' + status, 'Throwing error');
+                    logger_1.logger(uRef, 'Possible invalid transaction detected. Status ' + status, 'Throwing error');
                     throw new Error('Possible invalid transaction detected. Status ' + status);
                 }
                 _a.label = 11;
             case 11:
                 if (!(status === 202)) return [3, 17];
                 now = (new Date().valueOf() - tStart) / (1000 * 60);
-                logger_1.logger("Mining for " + now.toFixed(1) + " mins. " + status);
+                logger_1.logger(uRef, "Mining for " + now.toFixed(1) + " mins. " + status);
                 return [4, utils_1.sleep(30000)];
             case 12:
                 _a.sent();
@@ -107,18 +112,18 @@ var upload = function (tx, wallet) { return __awaiter(void 0, void 0, void 0, fu
                 return [3, 16];
             case 15:
                 err_2 = _a.sent();
-                logger_1.logger('Network error retrieving status.', status, 'Continuing...');
+                logger_1.logger(uRef, 'Network error retrieving status.', status, 'Continuing...');
                 status = 202;
                 return [3, 16];
             case 16: return [3, 11];
             case 17:
-                logger_1.logger('Finished mining period with status', status);
+                logger_1.logger(uRef, 'Finished mining period with status', status);
                 if (status === 200) {
-                    logger_1.logger("Success", status);
+                    logger_1.logger(uRef, "Success", status);
                     return [2, tx.id];
                 }
                 if (!(status === 404 || status === 410)) return [3, 25];
-                tries = 3;
+                tries = 6;
                 _a.label = 18;
             case 18: return [4, utils_1.sleep(40000)];
             case 19:
@@ -129,17 +134,17 @@ var upload = function (tx, wallet) { return __awaiter(void 0, void 0, void 0, fu
                 return [4, utils_1.getStatus(tx.id)];
             case 21:
                 status = _a.sent();
-                logger_1.logger('tries', tries, 'status', status);
+                logger_1.logger(uRef, 'tries', tries, 'status', status);
                 return [3, 23];
             case 22:
                 err_3 = _a.sent();
-                logger_1.logger('Network error getting status. Ignoring & waiting...', status);
+                logger_1.logger(uRef, 'Network error getting status. Ignoring & waiting...', status);
                 tries++;
                 status = 404;
                 return [3, 23];
             case 23:
                 if (status === 200) {
-                    logger_1.logger("Success", status);
+                    logger_1.logger(uRef, "Success", status);
                     return [2, tx.id];
                 }
                 _a.label = 24;
@@ -147,8 +152,8 @@ var upload = function (tx, wallet) { return __awaiter(void 0, void 0, void 0, fu
                 if (--tries) return [3, 18];
                 _a.label = 25;
             case 25:
-                logger_1.logger('Possible failure, no retry. Status ', status);
-                throw new Error('Possible failure. Status ' + status);
+                logger_1.logger(uRef, 'Possible failure, no retry. Status ', status);
+                throw new Error("Possible failure. Txid: " + tx.id + " Status: " + status);
         }
     });
 }); };
