@@ -31,6 +31,6 @@
   },
   "dependencies": {
     "ansi-colors": "^4.1.1",
-    "arweave": "^1.10.0"
+    "arweave": "^1.10.13"
   }
 }

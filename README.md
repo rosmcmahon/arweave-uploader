@@ -1,9 +1,9 @@
-# arweave-uploader
+# arweave-uploader (work in progress)
 
-Arweave Uploader - detect ~~and handle~~ arweave upload failures 
+Arweave Uploader - detect and handle arweave upload failures 
 
 ** N.B. this only works for value transfer or very small data txs
-** N.B. retry is currently disabled
+** N.B. Warning! Tx retry will create multiple txs during periods of unusually high network/gateway load
 
 ## Installation
 
@@ -11,7 +11,7 @@ Arweave Uploader - detect ~~and handle~~ arweave upload failures
 npm install arweave-uploader
 ```
 
-## Example Usage
+## Example Usage - N.B. API subject to constant change ;-)
 
 ```
 import Arweave from 'arweave'

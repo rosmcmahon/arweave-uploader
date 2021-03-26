@@ -5,9 +5,8 @@ import { logger } from './utils/logger'
 import { getStatus, sleep } from './utils/utils'
 
 const arweave = Arweave.init({
-	host: 'lon-1.arweave.net',
-	protocol: 'http',
-	port: 1984
+	host: 'arweave.net',
+	protocol: 'https',
 })
 
 
@@ -34,8 +33,8 @@ export const upload = async (tx: Transaction, wallet: JWKInterface, userReferenc
 	// start examining the status
 	let status = await getStatus(tx.id)
 
-	// 404s may change to 202s here, we'll wait 30 seconds total
-	let wait = 6
+	// 404s may change to 202s here, we'll wait 120 seconds total
+	let wait = 24
 	while((status === 404 || status === 410) && wait--){
 		logger(uRef, 'Initial 4XX detected. Waiting 5 seconds...', status)
 		await sleep(5000) //5 secs
@@ -71,9 +70,9 @@ export const upload = async (tx: Transaction, wallet: JWKInterface, userReferenc
 		return tx.id
 	}
 
-	// we'll give it 4 minutes for propogation
+	// we'll give it 8 minutes for propogation
 	if(status === 404 || status === 410){ //idk what 410 means but it happens sometimes
-		let tries = 6
+		let tries = 12
 		do{
 			await sleep(40000) //40 secs
 			try{
@@ -91,10 +90,8 @@ export const upload = async (tx: Transaction, wallet: JWKInterface, userReferenc
 		}while(--tries)
 	}
 
-	// if(status === 404){
-	// 	tx.addTag('Retry', (new Date().valueOf()/1000).toString() ) // this gives different txid too
-	// 	return await upload(tx, wallet)
-	// }
-	logger(uRef, 'Possible failure, no retry. Status ', status)//, '. Retrying post tx')
-	throw new Error(`Possible failure. Txid: ${tx.id} Status: ${status}`)
+	// throw new Error(`Possible failure. Txid: ${tx.id} Status: ${status}`)
+	logger(uRef, 'Possible failure. Status ', status, '. Retrying post tx')
+	tx.addTag('Retry', (new Date().valueOf()/1000).toString() ) // this gives different txid too
+	return await upload(tx, wallet)
 }
