@@ -48,9 +48,9 @@ var arweave = arweave_1.default.init({
     protocol: 'https',
 });
 var upload = function (tx, wallet, userReference) { return __awaiter(void 0, void 0, void 0, function () {
-    var uRef, tStart, status, wait, err_1, now, err_2, tries, err_3;
-    return __generator(this, function (_a) {
-        switch (_a.label) {
+    var uRef, tStart, status, wait, err_1, fullStatus_1, _a, _b, now, err_2, tries, err_3, fullStatus, _c, _d;
+    return __generator(this, function (_e) {
+        switch (_e.label) {
             case 0:
                 uRef = '';
                 if (userReference) {
@@ -58,103 +58,111 @@ var upload = function (tx, wallet, userReference) { return __awaiter(void 0, voi
                 }
                 return [4, arweave.transactions.sign(tx, wallet)];
             case 1:
-                _a.sent();
+                _e.sent();
+                logger_1.logger(uRef, 'New txid', tx.id);
                 return [4, arweave.transactions.post(tx)];
             case 2:
-                _a.sent();
-                logger_1.logger(uRef, 'New txid', tx.id);
+                _e.sent();
                 tStart = new Date().valueOf();
                 return [4, utils_1.getStatus(tx.id)];
             case 3:
-                status = _a.sent();
+                status = _e.sent();
                 wait = 24;
-                _a.label = 4;
+                _e.label = 4;
             case 4:
                 if (!((status === 404 || status === 410) && wait--)) return [3, 10];
                 logger_1.logger(uRef, 'Initial 4XX detected. Waiting 5 seconds...', status);
                 return [4, utils_1.sleep(5000)];
             case 5:
-                _a.sent();
-                _a.label = 6;
+                _e.sent();
+                _e.label = 6;
             case 6:
-                _a.trys.push([6, 8, , 9]);
+                _e.trys.push([6, 8, , 9]);
                 return [4, utils_1.getStatus(tx.id)];
             case 7:
-                status = _a.sent();
+                status = _e.sent();
                 return [3, 9];
             case 8:
-                err_1 = _a.sent();
+                err_1 = _e.sent();
                 logger_1.logger(uRef, 'Network error getting status. Ignoring & waiting...', status);
                 wait++;
                 status = 404;
                 return [3, 9];
             case 9: return [3, 4];
             case 10:
-                if (status === 400 || status === 404 || status === 410) {
-                    logger_1.logger(uRef, 'Possible invalid transaction detected. Status ' + status, 'Throwing error');
-                    throw new Error('Possible invalid transaction detected. Status ' + status);
-                }
-                _a.label = 11;
+                if (!(status === 400 || status === 404 || status === 410)) return [3, 12];
+                _b = (_a = JSON).stringify;
+                return [4, arweave.transactions.getStatus(tx.id)];
             case 11:
-                if (!(status === 202)) return [3, 17];
+                fullStatus_1 = _b.apply(_a, [_e.sent()]);
+                logger_1.logger(uRef, 'Possible invalid transaction detected. Status ' + status, 'Throwing error');
+                throw new Error('Possible invalid transaction detected. Status '
+                    + status + ':'
+                    + fullStatus_1);
+            case 12:
+                if (!(status === 202)) return [3, 18];
                 now = (new Date().valueOf() - tStart) / (1000 * 60);
                 logger_1.logger(uRef, "Mining for " + now.toFixed(1) + " mins. " + status);
                 return [4, utils_1.sleep(30000)];
-            case 12:
-                _a.sent();
-                _a.label = 13;
             case 13:
-                _a.trys.push([13, 15, , 16]);
-                return [4, utils_1.getStatus(tx.id)];
+                _e.sent();
+                _e.label = 14;
             case 14:
-                status = _a.sent();
-                return [3, 16];
+                _e.trys.push([14, 16, , 17]);
+                return [4, utils_1.getStatus(tx.id)];
             case 15:
-                err_2 = _a.sent();
+                status = _e.sent();
+                return [3, 17];
+            case 16:
+                err_2 = _e.sent();
                 logger_1.logger(uRef, 'Network error retrieving status.', status, 'Continuing...');
                 status = 202;
-                return [3, 16];
-            case 16: return [3, 11];
-            case 17:
+                return [3, 17];
+            case 17: return [3, 12];
+            case 18:
                 logger_1.logger(uRef, 'Finished mining period with status', status);
                 if (status === 200) {
                     logger_1.logger(uRef, "Success", status);
                     return [2, tx.id];
                 }
-                if (!(status === 404 || status === 410)) return [3, 25];
+                if (!(status === 404 || status === 410)) return [3, 26];
                 tries = 12;
-                _a.label = 18;
-            case 18: return [4, utils_1.sleep(40000)];
-            case 19:
-                _a.sent();
-                _a.label = 20;
+                _e.label = 19;
+            case 19: return [4, utils_1.sleep(40000)];
             case 20:
-                _a.trys.push([20, 22, , 23]);
-                return [4, utils_1.getStatus(tx.id)];
+                _e.sent();
+                _e.label = 21;
             case 21:
-                status = _a.sent();
-                logger_1.logger(uRef, 'tries', tries, 'status', status);
-                return [3, 23];
+                _e.trys.push([21, 23, , 24]);
+                return [4, utils_1.getStatus(tx.id)];
             case 22:
-                err_3 = _a.sent();
+                status = _e.sent();
+                logger_1.logger(uRef, 'tries', tries, 'status', status);
+                return [3, 24];
+            case 23:
+                err_3 = _e.sent();
                 logger_1.logger(uRef, 'Network error getting status. Ignoring & waiting...', status);
                 tries++;
                 status = 404;
-                return [3, 23];
-            case 23:
+                return [3, 24];
+            case 24:
                 if (status === 200) {
                     logger_1.logger(uRef, "Success", status);
                     return [2, tx.id];
                 }
-                _a.label = 24;
-            case 24:
-                if (--tries) return [3, 18];
-                _a.label = 25;
+                _e.label = 25;
             case 25:
-                logger_1.logger(uRef, 'Possible failure. Status ', status, '. Retrying post tx');
+                if (--tries) return [3, 19];
+                _e.label = 26;
+            case 26:
+                _d = (_c = JSON).stringify;
+                return [4, arweave.transactions.getStatus(tx.id)];
+            case 27:
+                fullStatus = _d.apply(_c, [_e.sent()]);
+                logger_1.logger(uRef, 'Possible failure. Status ', status, '. Retrying post tx. Full error:\n', fullStatus);
                 tx.addTag('Retry', (new Date().valueOf() / 1000).toString());
                 return [4, exports.upload(tx, wallet)];
-            case 26: return [2, _a.sent()];
+            case 28: return [2, _e.sent()];
         }
     });
 }); };
