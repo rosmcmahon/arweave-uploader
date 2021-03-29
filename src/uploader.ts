@@ -24,10 +24,10 @@ export const upload = async (tx: Transaction, wallet: JWKInterface, userReferenc
 
 	//sign 
 	await arweave.transactions.sign(tx, wallet)
+	logger(uRef, 'New txid', tx.id)
 
 	//post
 	await arweave.transactions.post(tx)
-	logger(uRef, 'New txid', tx.id)
 	const tStart = new Date().valueOf()
 
 	// start examining the status
@@ -47,8 +47,13 @@ export const upload = async (tx: Transaction, wallet: JWKInterface, userReferenc
 		}
 	}
 	if(status === 400 || status === 404 || status === 410){
+		const fullStatus = JSON.stringify(await arweave.transactions.getStatus(tx.id))
 		logger(uRef, 'Possible invalid transaction detected. Status ' + status, 'Throwing error')
-		throw new Error('Possible invalid transaction detected. Status ' + status)
+		throw new Error(
+			'Possible invalid transaction detected. Status ' 
+			+ status + ':' 
+			+ fullStatus
+		)
 	}
 
 	while(status === 202){
@@ -91,7 +96,8 @@ export const upload = async (tx: Transaction, wallet: JWKInterface, userReferenc
 	}
 
 	// throw new Error(`Possible failure. Txid: ${tx.id} Status: ${status}`)
-	logger(uRef, 'Possible failure. Status ', status, '. Retrying post tx')
+	const fullStatus = JSON.stringify(await arweave.transactions.getStatus(tx.id))
+	logger(uRef, 'Possible failure. Status ', status, '. Retrying post tx. Full error:\n', fullStatus)
 	tx.addTag('Retry', (new Date().valueOf()/1000).toString() ) // this gives different txid too
 	return await upload(tx, wallet)
 }
