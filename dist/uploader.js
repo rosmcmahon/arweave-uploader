@@ -41,16 +41,33 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.upload = void 0;
 var arweave_1 = __importDefault(require("arweave"));
+var axios_1 = __importDefault(require("axios"));
 var logger_1 = require("./utils/logger");
 var utils_1 = require("./utils/utils");
 var arweave = arweave_1.default.init({
     host: 'arweave.net',
     protocol: 'https',
 });
+var getFullStatus = function (txid) { return __awaiter(void 0, void 0, void 0, function () {
+    var _a, _b, e_1;
+    return __generator(this, function (_c) {
+        switch (_c.label) {
+            case 0:
+                _c.trys.push([0, 2, , 3]);
+                _b = (_a = JSON).stringify;
+                return [4, axios_1.default.get("https://arweave.net/tx/" + txid + "/status")];
+            case 1: return [2, _b.apply(_a, [(_c.sent()).data])];
+            case 2:
+                e_1 = _c.sent();
+                return [2, JSON.stringify(e_1)];
+            case 3: return [2];
+        }
+    });
+}); };
 var upload = function (tx, wallet, userReference) { return __awaiter(void 0, void 0, void 0, function () {
-    var uRef, tStart, status, wait, err_1, fullStatus_1, _a, _b, now, err_2, tries, err_3, fullStatus, _c, _d;
-    return __generator(this, function (_e) {
-        switch (_e.label) {
+    var uRef, tStart, status, wait, err_1, fullStatus_1, now, err_2, tries, err_3, fullStatus;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
             case 0:
                 uRef = '';
                 if (userReference) {
@@ -58,32 +75,32 @@ var upload = function (tx, wallet, userReference) { return __awaiter(void 0, voi
                 }
                 return [4, arweave.transactions.sign(tx, wallet)];
             case 1:
-                _e.sent();
+                _a.sent();
                 logger_1.logger(uRef, 'New txid', tx.id);
                 return [4, arweave.transactions.post(tx)];
             case 2:
-                _e.sent();
+                _a.sent();
                 tStart = new Date().valueOf();
                 return [4, utils_1.getStatus(tx.id)];
             case 3:
-                status = _e.sent();
+                status = _a.sent();
                 wait = 24;
-                _e.label = 4;
+                _a.label = 4;
             case 4:
                 if (!((status === 404 || status === 410) && wait--)) return [3, 10];
                 logger_1.logger(uRef, 'Initial 4XX detected. Waiting 5 seconds...', status);
                 return [4, utils_1.sleep(5000)];
             case 5:
-                _e.sent();
-                _e.label = 6;
+                _a.sent();
+                _a.label = 6;
             case 6:
-                _e.trys.push([6, 8, , 9]);
+                _a.trys.push([6, 8, , 9]);
                 return [4, utils_1.getStatus(tx.id)];
             case 7:
-                status = _e.sent();
+                status = _a.sent();
                 return [3, 9];
             case 8:
-                err_1 = _e.sent();
+                err_1 = _a.sent();
                 logger_1.logger(uRef, 'Network error getting status. Ignoring & waiting...', status);
                 wait++;
                 status = 404;
@@ -91,11 +108,10 @@ var upload = function (tx, wallet, userReference) { return __awaiter(void 0, voi
             case 9: return [3, 4];
             case 10:
                 if (!(status === 400 || status === 404 || status === 410)) return [3, 12];
-                _b = (_a = JSON).stringify;
-                return [4, arweave.transactions.getStatus(tx.id)];
+                return [4, getFullStatus(tx.id)];
             case 11:
-                fullStatus_1 = _b.apply(_a, [_e.sent()]);
-                logger_1.logger(uRef, 'Possible invalid transaction detected. Status ' + status, 'Throwing error');
+                fullStatus_1 = _a.sent();
+                logger_1.logger(uRef, 'Possible invalid transaction detected. Status ' + status, '\n' + fullStatus_1, '\nThrowing error');
                 throw new Error('Possible invalid transaction detected. Status '
                     + status + ':'
                     + fullStatus_1);
@@ -105,16 +121,16 @@ var upload = function (tx, wallet, userReference) { return __awaiter(void 0, voi
                 logger_1.logger(uRef, "Mining for " + now.toFixed(1) + " mins. " + status);
                 return [4, utils_1.sleep(30000)];
             case 13:
-                _e.sent();
-                _e.label = 14;
+                _a.sent();
+                _a.label = 14;
             case 14:
-                _e.trys.push([14, 16, , 17]);
+                _a.trys.push([14, 16, , 17]);
                 return [4, utils_1.getStatus(tx.id)];
             case 15:
-                status = _e.sent();
+                status = _a.sent();
                 return [3, 17];
             case 16:
-                err_2 = _e.sent();
+                err_2 = _a.sent();
                 logger_1.logger(uRef, 'Network error retrieving status.', status, 'Continuing...');
                 status = 202;
                 return [3, 17];
@@ -127,20 +143,20 @@ var upload = function (tx, wallet, userReference) { return __awaiter(void 0, voi
                 }
                 if (!(status === 404 || status === 410)) return [3, 26];
                 tries = 12;
-                _e.label = 19;
+                _a.label = 19;
             case 19: return [4, utils_1.sleep(40000)];
             case 20:
-                _e.sent();
-                _e.label = 21;
+                _a.sent();
+                _a.label = 21;
             case 21:
-                _e.trys.push([21, 23, , 24]);
+                _a.trys.push([21, 23, , 24]);
                 return [4, utils_1.getStatus(tx.id)];
             case 22:
-                status = _e.sent();
+                status = _a.sent();
                 logger_1.logger(uRef, 'tries', tries, 'status', status);
                 return [3, 24];
             case 23:
-                err_3 = _e.sent();
+                err_3 = _a.sent();
                 logger_1.logger(uRef, 'Network error getting status. Ignoring & waiting...', status);
                 tries++;
                 status = 404;
@@ -150,19 +166,17 @@ var upload = function (tx, wallet, userReference) { return __awaiter(void 0, voi
                     logger_1.logger(uRef, "Success", status);
                     return [2, tx.id];
                 }
-                _e.label = 25;
+                _a.label = 25;
             case 25:
                 if (--tries) return [3, 19];
-                _e.label = 26;
-            case 26:
-                _d = (_c = JSON).stringify;
-                return [4, arweave.transactions.getStatus(tx.id)];
+                _a.label = 26;
+            case 26: return [4, getFullStatus(tx.id)];
             case 27:
-                fullStatus = _d.apply(_c, [_e.sent()]);
+                fullStatus = _a.sent();
                 logger_1.logger(uRef, 'Possible failure. Status ', status, '. Retrying post tx. Full error:\n', fullStatus);
                 tx.addTag('Retry', (new Date().valueOf() / 1000).toString());
                 return [4, exports.upload(tx, wallet)];
-            case 28: return [2, _e.sent()];
+            case 28: return [2, _a.sent()];
         }
     });
 }); };
