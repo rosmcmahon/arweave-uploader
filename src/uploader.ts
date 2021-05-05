@@ -1,6 +1,7 @@
 import Arweave from 'arweave'
 import Transaction from 'arweave/node/lib/transaction'
 import { JWKInterface } from 'arweave/node/lib/wallet'
+import axios from 'axios'
 import { logger } from './utils/logger'
 import { getStatus, sleep } from './utils/utils'
 
@@ -8,6 +9,17 @@ const arweave = Arweave.init({
 	host: 'arweave.net',
 	protocol: 'https',
 })
+
+// const getFullStatus = async(txid: string)=> JSON.stringify(await arweave.transactions.getStatus(txid))
+const getFullStatus = async(txid: string)=> {
+	try {
+		return JSON.stringify(
+			(await axios.get(`https://arweave.net/tx/${txid}/status`)).data
+		)
+	} catch (e) {
+		return JSON.stringify(e)
+	}
+}
 
 
 export const upload = async (tx: Transaction, wallet: JWKInterface, userReference?: string): Promise<string> => {
@@ -47,8 +59,8 @@ export const upload = async (tx: Transaction, wallet: JWKInterface, userReferenc
 		}
 	}
 	if(status === 400 || status === 404 || status === 410){
-		const fullStatus = JSON.stringify(await arweave.transactions.getStatus(tx.id))
-		logger(uRef, 'Possible invalid transaction detected. Status ' + status, 'Throwing error')
+		const fullStatus = await getFullStatus(tx.id)
+		logger(uRef, 'Possible invalid transaction detected. Status ' + status, '\n' + fullStatus, '\nThrowing error')
 		throw new Error(
 			'Possible invalid transaction detected. Status ' 
 			+ status + ':' 
@@ -96,7 +108,7 @@ export const upload = async (tx: Transaction, wallet: JWKInterface, userReferenc
 	}
 
 	// throw new Error(`Possible failure. Txid: ${tx.id} Status: ${status}`)
-	const fullStatus = JSON.stringify(await arweave.transactions.getStatus(tx.id))
+	const fullStatus = await getFullStatus(tx.id)
 	logger(uRef, 'Possible failure. Status ', status, '. Retrying post tx. Full error:\n', fullStatus)
 	tx.addTag('Retry', (new Date().valueOf()/1000).toString() ) // this gives different txid too
 	return await upload(tx, wallet)

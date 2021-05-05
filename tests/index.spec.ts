@@ -136,4 +136,26 @@ describe('arweave-uploader tests', () => {
 		expect(txid).to.have.lengthOf(43)
 	}).timeout(0)
 	
+
+	it('detects an upload failure but cannot recover :-(', async () => {
+		const tx = await arweave.createTransaction({ 
+			data: '123',
+		}, goodJwk)
+
+		// let's fake the getStatus calls in upload function
+		const fakeGetStatus = sinon.stub(Utils, 'getStatus').resolves(410)
+
+		//let's save money 🤑
+		const preventTxPost = sinon.stub(Transactions.prototype, 'post').resolves()
+
+		//let's save time
+		sinon.stub(Utils, 'sleep').resolves()
+
+		const txid = await upload(tx, goodJwk, 'fail before retry')
+		
+		expect(fakeGetStatus.called).to.equal(true)
+		expect(preventTxPost.called).to.equal(true)
+		expect(txid).to.have.lengthOf(43)
+	}).timeout(0)
+	
 })

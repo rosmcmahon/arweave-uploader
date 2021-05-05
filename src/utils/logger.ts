@@ -21,7 +21,7 @@ export const logger = (...args: any[]) => {
 	}
 	if(LOGFILE && typeof window === 'undefined'){
 		appendFile(
-			'aruploader.log', 
+			'ar-uploader.log', 
 			'\"' + new Date().toUTCString() + '\",' + args.join(',') + EOL,
 			()=>{}
 		)
