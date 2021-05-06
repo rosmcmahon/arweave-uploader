@@ -59,13 +59,16 @@ var getFullStatus = function (txid) { return __awaiter(void 0, void 0, void 0, f
             case 1: return [2, _b.apply(_a, [(_c.sent()).data])];
             case 2:
                 e_1 = _c.sent();
+                if (e_1.response && e_1.response.data) {
+                    return [2, JSON.stringify(e_1.response.data)];
+                }
                 return [2, JSON.stringify(e_1)];
             case 3: return [2];
         }
     });
 }); };
 var upload = function (tx, wallet, userReference) { return __awaiter(void 0, void 0, void 0, function () {
-    var uRef, tStart, status, wait, err_1, fullStatus_1, now, err_2, tries, err_3, fullStatus;
+    var uRef, postStatus, tStart, status, wait, err_1, fullStatus_1, now, err_2, tries, err_3, fullStatus;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -77,106 +80,116 @@ var upload = function (tx, wallet, userReference) { return __awaiter(void 0, voi
             case 1:
                 _a.sent();
                 logger_1.logger(uRef, 'New txid', tx.id);
-                return [4, arweave.transactions.post(tx)];
+                postStatus = 0;
+                _a.label = 2;
             case 2:
+                if (!(postStatus !== 200)) return [3, 5];
+                return [4, arweave.transactions.post(tx)];
+            case 3:
+                postStatus = (_a.sent()).status;
+                logger_1.logger(uRef, 'Tx post upload status', postStatus);
+                return [4, utils_1.sleep(5000)];
+            case 4:
                 _a.sent();
+                return [3, 2];
+            case 5:
                 tStart = new Date().valueOf();
                 return [4, utils_1.getStatus(tx.id)];
-            case 3:
+            case 6:
                 status = _a.sent();
                 wait = 24;
-                _a.label = 4;
-            case 4:
-                if (!((status === 404 || status === 410) && wait--)) return [3, 10];
+                _a.label = 7;
+            case 7:
+                if (!((status === 404 || status === 410) && wait--)) return [3, 13];
                 logger_1.logger(uRef, 'Initial 4XX detected. Waiting 5 seconds...', status);
                 return [4, utils_1.sleep(5000)];
-            case 5:
-                _a.sent();
-                _a.label = 6;
-            case 6:
-                _a.trys.push([6, 8, , 9]);
-                return [4, utils_1.getStatus(tx.id)];
-            case 7:
-                status = _a.sent();
-                return [3, 9];
             case 8:
+                _a.sent();
+                _a.label = 9;
+            case 9:
+                _a.trys.push([9, 11, , 12]);
+                return [4, utils_1.getStatus(tx.id)];
+            case 10:
+                status = _a.sent();
+                return [3, 12];
+            case 11:
                 err_1 = _a.sent();
                 logger_1.logger(uRef, 'Network error getting status. Ignoring & waiting...', status);
                 wait++;
                 status = 404;
-                return [3, 9];
-            case 9: return [3, 4];
-            case 10:
-                if (!(status === 400 || status === 404 || status === 410)) return [3, 12];
+                return [3, 12];
+            case 12: return [3, 7];
+            case 13:
+                if (!(status === 400 || status === 404 || status === 410)) return [3, 15];
                 return [4, getFullStatus(tx.id)];
-            case 11:
+            case 14:
                 fullStatus_1 = _a.sent();
                 logger_1.logger(uRef, 'Possible invalid transaction detected. Status ' + status, '\n' + fullStatus_1, '\nThrowing error');
                 throw new Error('Possible invalid transaction detected. Status '
                     + status + ':'
                     + fullStatus_1);
-            case 12:
-                if (!(status === 202)) return [3, 18];
+            case 15:
+                if (!(status === 202)) return [3, 21];
                 now = (new Date().valueOf() - tStart) / (1000 * 60);
                 logger_1.logger(uRef, "Mining for " + now.toFixed(1) + " mins. " + status);
                 return [4, utils_1.sleep(30000)];
-            case 13:
-                _a.sent();
-                _a.label = 14;
-            case 14:
-                _a.trys.push([14, 16, , 17]);
-                return [4, utils_1.getStatus(tx.id)];
-            case 15:
-                status = _a.sent();
-                return [3, 17];
             case 16:
+                _a.sent();
+                _a.label = 17;
+            case 17:
+                _a.trys.push([17, 19, , 20]);
+                return [4, utils_1.getStatus(tx.id)];
+            case 18:
+                status = _a.sent();
+                return [3, 20];
+            case 19:
                 err_2 = _a.sent();
                 logger_1.logger(uRef, 'Network error retrieving status.', status, 'Continuing...');
                 status = 202;
-                return [3, 17];
-            case 17: return [3, 12];
-            case 18:
+                return [3, 20];
+            case 20: return [3, 15];
+            case 21:
                 logger_1.logger(uRef, 'Finished mining period with status', status);
                 if (status === 200) {
                     logger_1.logger(uRef, "Success", status);
                     return [2, tx.id];
                 }
-                if (!(status === 404 || status === 410)) return [3, 26];
+                if (!(status === 404 || status === 410)) return [3, 29];
                 tries = 12;
-                _a.label = 19;
-            case 19: return [4, utils_1.sleep(40000)];
-            case 20:
+                _a.label = 22;
+            case 22: return [4, utils_1.sleep(40000)];
+            case 23:
                 _a.sent();
-                _a.label = 21;
-            case 21:
-                _a.trys.push([21, 23, , 24]);
+                _a.label = 24;
+            case 24:
+                _a.trys.push([24, 26, , 27]);
                 return [4, utils_1.getStatus(tx.id)];
-            case 22:
+            case 25:
                 status = _a.sent();
                 logger_1.logger(uRef, 'tries', tries, 'status', status);
-                return [3, 24];
-            case 23:
+                return [3, 27];
+            case 26:
                 err_3 = _a.sent();
                 logger_1.logger(uRef, 'Network error getting status. Ignoring & waiting...', status);
                 tries++;
                 status = 404;
-                return [3, 24];
-            case 24:
+                return [3, 27];
+            case 27:
                 if (status === 200) {
                     logger_1.logger(uRef, "Success", status);
                     return [2, tx.id];
                 }
-                _a.label = 25;
-            case 25:
-                if (--tries) return [3, 19];
-                _a.label = 26;
-            case 26: return [4, getFullStatus(tx.id)];
-            case 27:
+                _a.label = 28;
+            case 28:
+                if (--tries) return [3, 22];
+                _a.label = 29;
+            case 29: return [4, getFullStatus(tx.id)];
+            case 30:
                 fullStatus = _a.sent();
                 logger_1.logger(uRef, 'Possible failure. Status ', status, '. Retrying post tx. Full error:\n', fullStatus);
                 tx.addTag('Retry', (new Date().valueOf() / 1000).toString());
                 return [4, exports.upload(tx, wallet)];
-            case 28: return [2, _a.sent()];
+            case 31: return [2, _a.sent()];
         }
     });
 }); };
