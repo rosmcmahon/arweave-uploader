@@ -17,6 +17,9 @@ const getFullStatus = async(txid: string)=> {
 			(await axios.get(`https://arweave.net/tx/${txid}/status`)).data
 		)
 	} catch (e) {
+		if(e.response && e.response.data){
+			return JSON.stringify(e.response.data)
+		}
 		return JSON.stringify(e)
 	}
 }
@@ -39,7 +42,12 @@ export const upload = async (tx: Transaction, wallet: JWKInterface, userReferenc
 	logger(uRef, 'New txid', tx.id)
 
 	//post
-	await arweave.transactions.post(tx)
+	let postStatus = 0
+	while(postStatus !== 200){
+		postStatus = (await arweave.transactions.post(tx)).status
+		logger(uRef, 'Tx post upload status', postStatus)
+		await sleep(5000)
+	}
 	const tStart = new Date().valueOf()
 
 	// start examining the status

@@ -18,6 +18,8 @@ describe('arweave-uploader tests', () => {
 	let badJwk2: JWKInterface
 	let goodJwk: JWKInterface = jwk
 
+	const mockPostReturnOk = {status: 200, data: 'mock status', statusText: 'mock ok'}
+
 	before( async function () {
 		this.timeout(20000)
 		// create some ransom empty wallets
@@ -92,7 +94,7 @@ describe('arweave-uploader tests', () => {
 			.onCall(9).resolves(200)
 
 		//let's save money 🤑
-		const preventTxPost = sinon.stub(Transactions.prototype, 'post').resolves()
+		const preventTxPost = sinon.stub(Transactions.prototype, 'post').resolves(mockPostReturnOk)
 
 		//let's save time
 		sinon.stub(Utils, 'sleep').resolves()
@@ -124,7 +126,7 @@ describe('arweave-uploader tests', () => {
 			.onCall(10).resolves(200)
 
 		//let's save money 🤑
-		const preventTxPost = sinon.stub(Transactions.prototype, 'post').resolves()
+		const preventTxPost = sinon.stub(Transactions.prototype, 'post').resolves(mockPostReturnOk)
 
 		//let's save time
 		sinon.stub(Utils, 'sleep').resolves()
@@ -137,7 +139,7 @@ describe('arweave-uploader tests', () => {
 	}).timeout(0)
 	
 
-	it('detects an upload failure but cannot recover :-(', async () => {
+	it('detects an initial tx failure but cannot recover :-(', async () => {
 		const tx = await arweave.createTransaction({ 
 			data: '123',
 		}, goodJwk)
@@ -146,12 +148,39 @@ describe('arweave-uploader tests', () => {
 		const fakeGetStatus = sinon.stub(Utils, 'getStatus').resolves(410)
 
 		//let's save money 🤑
-		const preventTxPost = sinon.stub(Transactions.prototype, 'post').resolves()
+		const preventTxPost = sinon.stub(Transactions.prototype, 'post').resolves(mockPostReturnOk)
 
 		//let's save time
 		sinon.stub(Utils, 'sleep').resolves()
 
-		const txid = await upload(tx, goodJwk, 'fail before retry')
+		try{
+			const txid = await upload(tx, goodJwk, 'expect initial error thrown')
+		}catch(e){
+			expect(e).to.be.an('Error')
+		}
+		
+		expect(fakeGetStatus.called).to.equal(true)
+		expect(preventTxPost.called).to.equal(true)
+	}).timeout(0)
+
+	it('detects an initial tx post failure and recovers', async () => {
+		const tx = await arweave.createTransaction({ 
+			data: '123',
+		}, goodJwk)
+
+		// let's fake the getStatus calls in upload function
+		const fakeGetStatus = sinon.stub(Utils, 'getStatus').resolves(200) //mine straight away, we're not testing this
+
+		//let's save money 🤑
+		const preventTxPost = sinon.stub(Transactions.prototype, 'post')
+		.onCall(0).resolves({status: 400, statusText:'mock', data:'mock' })
+		.onCall(1).resolves({status: 400, statusText:'mock', data:'mock' })
+		.onCall(2).resolves(mockPostReturnOk)
+
+		//let's save time
+		sinon.stub(Utils, 'sleep').resolves()
+		
+		const txid = await upload(tx, goodJwk, 'tx post fails at first')
 		
 		expect(fakeGetStatus.called).to.equal(true)
 		expect(preventTxPost.called).to.equal(true)
