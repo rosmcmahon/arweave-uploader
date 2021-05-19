@@ -97,12 +97,12 @@ var upload = function (tx, wallet, userReference) { return __awaiter(void 0, voi
                 return [4, utils_1.getStatus(tx.id)];
             case 6:
                 status = _a.sent();
-                wait = 24;
+                wait = 60;
                 _a.label = 7;
             case 7:
                 if (!((status === 404 || status === 410) && wait--)) return [3, 13];
-                logger_1.logger(uRef, 'Initial 4XX detected. Waiting 5 seconds...', status);
-                return [4, utils_1.sleep(5000)];
+                logger_1.logger(uRef, "Initial " + status + " detected. Waiting 30 seconds...", status);
+                return [4, utils_1.sleep(30000)];
             case 8:
                 _a.sent();
                 _a.label = 9;
