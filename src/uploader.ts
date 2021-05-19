@@ -53,11 +53,11 @@ export const upload = async (tx: Transaction, wallet: JWKInterface, userReferenc
 	// start examining the status
 	let status = await getStatus(tx.id)
 
-	// 404s may change to 202s here, we'll wait 120 seconds total
-	let wait = 24
+	// 404s may change to 202s here, we'll wait a long time as exteme things can happen
+	let wait = 60
 	while((status === 404 || status === 410) && wait--){
-		logger(uRef, 'Initial 4XX detected. Waiting 5 seconds...', status)
-		await sleep(5000) //5 secs
+		logger(uRef, `Initial ${status} detected. Waiting 30 seconds...`, status)
+		await sleep(30000) 
 		try{
 			status = await getStatus(tx.id)
 		}catch(err){

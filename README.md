@@ -1,9 +1,9 @@
 # arweave-uploader (work in progress)
 
-Arweave Uploader - detect and handle arweave upload failures 
+Arweave Uploader - detect and handle arweave upload failures. It attempts high fault tolerance, so not really suitable for non-automated systems (very long timeouts).
 
 ** N.B. this only works for value transfer or very small data txs
-** N.B. Warning! Tx retry will create multiple txs during periods of unusually high network/gateway load
+** N.B. Warning! Tx retry may create multiple txs during periods of unusually high network/gateway load
 
 ## Installation
 
