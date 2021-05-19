@@ -9,7 +9,7 @@
     "build": "tsc -p tsconfig.build.json",
     "test": "mocha -r ts-node/register tests/**/*.spec.ts",
     "preversion": "npm run build && git commit -m \"auto: dist\" -- ./dist",
-    "postversion": "git push && git push --tags"
+    "postversion": "git push && git push --tags && npm publish"
   },
   "keywords": [],
   "author": "Ros McMahon <rosmcmahon@gmail.com>",
