@@ -41,7 +41,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getStatus = exports.sleep = void 0;
 var arweave_1 = __importDefault(require("arweave"));
-var arweave = arweave_1.default.init({ host: 'arweave.net', protocol: 'https' });
+var arweave = arweave_1.default.init({ host: 'arweave.net', protocol: 'https', timeout: 60000, });
 var sleep = function (ms) { return __awaiter(void 0, void 0, void 0, function () { return __generator(this, function (_a) {
     return [2, new Promise(function (resolve) { return setTimeout(resolve, ms); })];
 }); }); };
