@@ -13,11 +13,11 @@ const arweave = Arweave.init({
 
 // const getFullStatus = async(txid: string)=> JSON.stringify(await arweave.transactions.getStatus(txid))
 const getFullStatus = async(txid: string)=> {
-	try {
+	try{
 		return JSON.stringify(
 			(await axios.get(`https://arweave.net/tx/${txid}/status`)).data
 		)
-	} catch (e) {
+	}catch(e:any){
 		if(e.response && e.response.data){
 			return JSON.stringify(e.response.data)
 		}
@@ -120,5 +120,5 @@ export const upload = async (tx: Transaction, wallet: JWKInterface, userReferenc
 	const fullStatus = await getFullStatus(tx.id)
 	logger(uRef, 'Possible failure. Status ', status, '. Retrying post tx. Full error:\n', fullStatus)
 	tx.addTag('Retry', (new Date().valueOf()/1000).toString() ) // this gives different txid too
-	return await upload(tx, wallet)
+	return await upload(tx, wallet, userReference)
 }
