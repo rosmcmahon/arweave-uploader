@@ -189,7 +189,7 @@ var upload = function (tx, wallet, userReference) { return __awaiter(void 0, voi
                 fullStatus = _a.sent();
                 logger_1.logger(uRef, 'Possible failure. Status ', status, '. Retrying post tx. Full error:\n', fullStatus);
                 tx.addTag('Retry', (new Date().valueOf() / 1000).toString());
-                return [4, exports.upload(tx, wallet)];
+                return [4, exports.upload(tx, wallet, userReference)];
             case 31: return [2, _a.sent()];
         }
     });
