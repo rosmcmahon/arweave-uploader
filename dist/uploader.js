@@ -47,7 +47,7 @@ var utils_1 = require("./utils/utils");
 var arweave = arweave_1.default.init({
     host: 'arweave.net',
     protocol: 'https',
-    timeout: 60000,
+    timeout: 600000,
 });
 var getFullStatus = function (txid) { return __awaiter(void 0, void 0, void 0, function () {
     var _a, _b, e_1;
