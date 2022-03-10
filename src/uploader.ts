@@ -8,7 +8,7 @@ import { getStatus, sleep } from './utils/utils'
 const arweave = Arweave.init({
 	host: 'arweave.net',
 	protocol: 'https',
-	timeout: 60000,
+	timeout: 600000,
 })
 
 // const getFullStatus = async(txid: string)=> JSON.stringify(await arweave.transactions.getStatus(txid))
